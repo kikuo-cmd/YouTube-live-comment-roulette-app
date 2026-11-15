@@ -194,8 +194,8 @@
   </div>
 
   <script>
-    // Renderのビルド時に環境変数に置き換わります
-    const API_KEY = "__API_KEY_PLACEHOLDER__";
+    // Viteの環境変数からAPIキーを安全に読み込みます
+    const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
     let users = new Map();       // channelId => displayName (参加者プール)
     let winnerHistory = [];    // 当選者の配列 [{id, name, time}]
@@ -222,8 +222,8 @@
 
     // 監視開始
     async function startMonitoring() {
-      if (!API_KEY || API_KEY.includes('PLACEHOLDER')) {
-        return alert('APIキーが環境変数に設定されていません。Renderの設定を確認してください。');
+      if (!API_KEY) {
+        return alert('APIキーが設定されていません。環境変数（VITE_YOUTUBE_API_KEY）を確認してください。');
       }
 
       const urlInput = document.getElementById('videoUrl').value.trim();
