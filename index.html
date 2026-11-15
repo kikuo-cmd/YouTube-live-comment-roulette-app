@@ -64,10 +64,10 @@
     }
     .btn-red { background: #ff0000; color: white; flex: 1; }
     .btn-red:hover:not(:disabled) { background: #cc0000; }
-    .btn-green { background: #28a745; color: white; flex: 1; }
-    .btn-green:hover:not(:disabled) { background: #218838; }
     .btn-gray { background: #555; color: white; }
     .btn-gray:hover:not(:disabled) { background: #444; }
+    .btn-green { background: #28a745; color: white; flex: 1; }
+    .btn-green:hover:not(:disabled) { background: #218838; }
     button:disabled { background: #333; color: #777; cursor: not-allowed; }
 
     #status { font-size: 13px; color: #aaa; margin-top: 10px; }
@@ -194,8 +194,8 @@
   </div>
 
   <script>
-    // いただいたAPIキーをコード内に直接設定
-    const API_KEY = "AIzaSyDoJ9vLrAgS05TShVo1wnPIzsI0393rBU8";
+    // Renderのビルド時に環境変数に置き換わります
+    const API_KEY = "__API_KEY_PLACEHOLDER__";
 
     let users = new Map();       // channelId => displayName (参加者プール)
     let winnerHistory = [];    // 当選者の配列 [{id, name, time}]
@@ -222,6 +222,10 @@
 
     // 監視開始
     async function startMonitoring() {
+      if (!API_KEY || API_KEY.includes('PLACEHOLDER')) {
+        return alert('APIキーが環境変数に設定されていません。Renderの設定を確認してください。');
+      }
+
       const urlInput = document.getElementById('videoUrl').value.trim();
       const videoId = extractVideoId(urlInput);
 
@@ -294,7 +298,6 @@
             const authorId = item.authorDetails?.channelId;
             const authorName = item.authorDetails?.displayName;
 
-            // 「抽選」が含まれていて、まだ参加者プールにも過去の当選履歴にもいない場合のみ追加
             const alreadyWon = winnerHistory.some(w => w.id === authorId);
             if (message.includes('抽選') && authorId && !users.has(authorId) && !alreadyWon) {
               users.set(authorId, authorName);
@@ -320,7 +323,6 @@
       const entries = Array.from(users.entries());
       document.getElementById('count').textContent = entries.length;
 
-      // 参加者ボックス
       const userBox = document.getElementById('user-list-box');
       if (entries.length === 0) {
         userBox.innerHTML = '<div style="color:#777; padding:4px;">参加者がいません</div>';
@@ -333,7 +335,6 @@
         `).join('');
       }
 
-      // 当選履歴ボックス
       const historyBox = document.getElementById('winner-history-box');
       document.getElementById('winner-count').textContent = winnerHistory.length;
       if (winnerHistory.length === 0) {
