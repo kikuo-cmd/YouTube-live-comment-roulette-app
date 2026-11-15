@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YouTube「抽選」コメントルーレット（APIキー内蔵版）</title>
+  <title>YouTube「抽選」コメントルーレット</title>
   <style>
     body {
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
@@ -194,7 +194,7 @@
   </div>
 
   <script>
-    // ご提示いただいたAPIキーを埋め込み済み
+    // いただいたAPIキーをコード内に直接設定
     const API_KEY = "AIzaSyDoJ9vLrAgS05TShVo1wnPIzsI0393rBU8";
 
     let users = new Map();       // channelId => displayName (参加者プール)
@@ -294,7 +294,7 @@
             const authorId = item.authorDetails?.channelId;
             const authorName = item.authorDetails?.displayName;
 
-            // 「抽選」が含まれていて、まだ参加者プールにも過去の当選履歴にもいない場合のみ追加（＝1人1回制限）
+            // 「抽選」が含まれていて、まだ参加者プールにも過去の当選履歴にもいない場合のみ追加
             const alreadyWon = winnerHistory.some(w => w.id === authorId);
             if (message.includes('抽選') && authorId && !users.has(authorId) && !alreadyWon) {
               users.set(authorId, authorName);
@@ -426,7 +426,6 @@
           const winnerIndex = Math.floor(normalizedAngle / sliceAngle);
           const [winnerId, winnerName] = entries[winnerIndex];
 
-          // 参加者プールから削除し、当選履歴に追加
           users.delete(winnerId);
           const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           winnerHistory.unshift({ id: winnerId, name: winnerName, time: nowTime });
@@ -439,19 +438,16 @@
       requestAnimationFrame(animate);
     }
 
-    // 個別の参加者を削除
     function removeUser(id) {
       users.delete(id);
       updateUI();
     }
 
-    // 履歴を削除
     function removeHistory(index) {
       winnerHistory.splice(index, 1);
       updateUI();
     }
 
-    // 全クリア
     function resetUsers() {
       if (confirm('参加者を全員クリアしますか？')) {
         users.clear();
