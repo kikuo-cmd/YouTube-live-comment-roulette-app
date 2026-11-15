@@ -152,7 +152,6 @@
     <div class="panel">
       <h3>配信・接続設定</h3>
       
-      <!-- APIキーをコード内にあらかじめ埋め込む設定 -->
       <div class="input-group">
         <label>ライブ配信のURL / 動画ID</label>
         <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
@@ -195,8 +194,8 @@
   </div>
 
   <script>
-    // ▼ここにあなたのYouTube APIキーを直接記述してください
-    const API_KEY = "AIzaSyDoJ9vLrAgS05TShVo1wnPIzsI0393rBU86";
+    // ご提示いただいたAPIキーを埋め込み済み
+    const API_KEY = "AIzaSyDoJ9vLrAgS05TShVo1wnPIzsI0393rBU8";
 
     let users = new Map();       // channelId => displayName (参加者プール)
     let winnerHistory = [];    // 当選者の配列 [{id, name, time}]
@@ -223,10 +222,6 @@
 
     // 監視開始
     async function startMonitoring() {
-      if (API_KEY === "YOUR_API_KEY_HERE" || !API_KEY) {
-        return alert('コード内の API_KEY 変数に有効なYouTube APIキーを設定してください。');
-      }
-
       const urlInput = document.getElementById('videoUrl').value.trim();
       const videoId = extractVideoId(urlInput);
 
