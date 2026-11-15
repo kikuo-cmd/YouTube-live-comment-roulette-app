@@ -2,32 +2,44 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>YouTube「抽選」コメントルーレット</title>
+  <title>YouTube「抽選」コメントルーレット（APIキー内蔵版）</title>
   <style>
     body {
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
-      text-align: center;
       background: #121212;
       color: #fff;
-      padding: 20px;
       margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     h2 { margin-bottom: 15px; }
+    .container {
+      display: flex;
+      gap: 20px;
+      max-width: 1100px;
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
     .panel {
       background: #1e1e1e;
-      padding: 15px;
+      padding: 20px;
       border-radius: 10px;
-      max-width: 650px;
-      margin: 0 auto 20px auto;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      flex: 1;
+      min-width: 320px;
+      max-width: 500px;
     }
-    .input-row {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
+    .input-group {
       margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      text-align: left;
     }
+    label { font-size: 13px; color: #aaa; }
     input {
       padding: 10px 12px;
       font-size: 14px;
@@ -36,37 +48,53 @@
       background: #2a2a2a;
       color: #fff;
     }
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
     button {
       padding: 10px 18px;
-      font-size: 15px;
+      font-size: 14px;
       border-radius: 6px;
       border: none;
       cursor: pointer;
       font-weight: bold;
       transition: 0.2s;
     }
-    .btn-red { background: #ff0000; color: white; }
+    .btn-red { background: #ff0000; color: white; flex: 1; }
     .btn-red:hover:not(:disabled) { background: #cc0000; }
-    .btn-green { background: #28a745; color: white; }
+    .btn-green { background: #28a745; color: white; flex: 1; }
     .btn-green:hover:not(:disabled) { background: #218838; }
     .btn-gray { background: #555; color: white; }
     .btn-gray:hover:not(:disabled) { background: #444; }
     button:disabled { background: #333; color: #777; cursor: not-allowed; }
 
-    #status { font-size: 14px; color: #aaa; margin-top: 8px; }
+    #status { font-size: 13px; color: #aaa; margin-top: 10px; }
+    
+    .roulette-section {
+      text-align: center;
+      flex: 1;
+      min-width: 350px;
+      max-width: 450px;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
     #winner {
-      font-size: 30px;
+      font-size: 26px;
       font-weight: bold;
       color: #ffcc00;
-      margin: 15px 0;
-      min-height: 42px;
+      margin: 10px 0;
+      min-height: 38px;
       text-shadow: 0 2px 8px rgba(255, 204, 0, 0.4);
     }
     #canvas-container {
       position: relative;
-      width: 420px;
-      height: 420px;
-      margin: 10px auto 20px auto;
+      width: 340px;
+      height: 340px;
+      margin: 10px auto;
     }
     #pointer {
       position: absolute;
@@ -75,80 +103,113 @@
       transform: translateX(-50%);
       width: 0;
       height: 0;
-      border-left: 16px solid transparent;
-      border-right: 16px solid transparent;
-      border-top: 32px solid #ffcc00;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 28px solid #ffcc00;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
       z-index: 10;
     }
-    #user-list {
-      max-width: 650px;
-      margin: 10px auto;
+    .list-section {
+      margin-top: 20px;
       text-align: left;
-      background: #1e1e1e;
-      padding: 12px;
-      border-radius: 8px;
-      max-height: 140px;
+    }
+    .scroll-box {
+      background: #121212;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 8px;
+      max-height: 120px;
       overflow-y: auto;
-      font-size: 14px;
-      line-height: 1.6;
+      font-size: 13px;
+      margin-top: 5px;
     }
-    .badge {
-      display: inline-block;
-      background: #333;
-      padding: 3px 10px;
-      border-radius: 15px;
-      margin: 3px;
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 6px;
+      border-bottom: 1px solid #222;
     }
+    .user-item:last-child { border-bottom: none; }
+    .delete-btn {
+      background: #a94442;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .delete-btn:hover { background: #843534; }
   </style>
 </head>
 <body>
 
-  <h2>🎯 YouTube「抽選」コメントルーレット</h2>
+  <h2>🎯 YouTube 抽選コメントルーレット</h2>
 
-  <div class="panel">
-    <div class="input-row">
-      <input type="password" id="apiKey" placeholder="YouTube APIキー" size="26">
-      <input type="text" id="videoUrl" placeholder="ライブ配信のURL (例: https://youtube.com/live/...)" size="38">
+  <div class="container">
+    <!-- 設定・参加者管理パネル -->
+    <div class="panel">
+      <h3>配信・接続設定</h3>
+      
+      <!-- APIキーをコード内にあらかじめ埋め込む設定 -->
+      <div class="input-group">
+        <label>ライブ配信のURL / 動画ID</label>
+        <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+      </div>
+      
+      <div class="button-row">
+        <button id="startBtn" class="btn-red" onclick="startMonitoring()">監視スタート</button>
+        <button id="stopBtn" class="btn-gray" onclick="stopMonitoring()" disabled>停止</button>
+      </div>
+      <div id="status">未接続：URLを入力してスタートしてください</div>
+
+      <div class="list-section">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label>参加者一覧 (<span id="count">0</span>名)</label>
+          <button class="btn-gray" style="padding:2px 6px; font-size:11px;" onclick="resetUsers()">全員クリア</button>
+        </div>
+        <div id="user-list-box" class="scroll-box">まだ参加者がいません</div>
+      </div>
+
+      <div class="list-section">
+        <label>当選履歴 (<span id="winner-count">0</span>件)</label>
+        <div id="winner-history-box" class="scroll-box">まだ当選者はいません</div>
+      </div>
     </div>
-    <div class="input-row">
-      <button id="startBtn" class="btn-red" onclick="startMonitoring()">監視スタート</button>
-      <button id="stopBtn" class="btn-gray" onclick="stopMonitoring()" disabled>監視ストップ</button>
+
+    <!-- ルーレット画面 -->
+    <div class="roulette-section">
+      <h3>ルーレット抽選</h3>
+      <div id="winner"></div>
+
+      <div id="canvas-container">
+        <div id="pointer"></div>
+        <canvas id="wheel" width="340" height="340"></canvas>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top: 15px;">
+        <button id="spinBtn" class="btn-green" onclick="spinRoulette()" disabled>ルーレットを回す！</button>
+      </div>
     </div>
-    <div id="status">待機中：URLとAPIキーを入力してスタートしてください</div>
   </div>
-
-  <div>
-    <button id="spinBtn" class="btn-green" onclick="spinRoulette()" disabled>ルーレットを回す！</button>
-    <button id="removeWinnerBtn" class="btn-gray" onclick="removeLastWinner()" disabled>当選者を除外</button>
-    <button class="btn-gray" onclick="resetUsers()">全員リセット</button>
-  </div>
-
-  <div id="winner"></div>
-
-  <div id="canvas-container">
-    <div id="pointer"></div>
-    <canvas id="wheel" width="420" height="420"></canvas>
-  </div>
-
-  <div>「抽選」コメント参加者 (<span id="count">0</span>名):</div>
-  <div id="user-list">まだ参加者がいません</div>
 
   <script>
-    let users = new Map(); // channelId => displayName
+    // ▼ここにあなたのYouTube APIキーを直接記述してください
+    const API_KEY = "AIzaSyDoJ9vLrAgS05TShVo1wnPIzsI0393rBU86";
+
+    let users = new Map();       // channelId => displayName (参加者プール)
+    let winnerHistory = [];    // 当選者の配列 [{id, name, time}]
     let nextPageToken = null;
     let liveChatId = null;
     let isMonitoring = false;
     let pollTimer = null;
     let currentAngle = 0;
-    let lastWinnerId = null;
 
-    // 各種YouTube URLから11桁の動画IDを抽出する関数
+    // URLから動画IDを抽出する関数
     function extractVideoId(input) {
       const trimmed = input.trim();
-      // すでに11桁のIDのみが入力された場合
       if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
-
       const patterns = [
         /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/live\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
         /[?&]v=([a-zA-Z0-9_-]{11})/
@@ -160,19 +221,21 @@
       return null;
     }
 
-    // 1. 監視開始処理
+    // 監視開始
     async function startMonitoring() {
-      const apiKey = document.getElementById('apiKey').value.trim();
+      if (API_KEY === "YOUR_API_KEY_HERE" || !API_KEY) {
+        return alert('コード内の API_KEY 変数に有効なYouTube APIキーを設定してください。');
+      }
+
       const urlInput = document.getElementById('videoUrl').value.trim();
       const videoId = extractVideoId(urlInput);
 
-      if (!apiKey) return alert('YouTube APIキーを入力してください。');
-      if (!videoId) return alert('有効なYouTubeのURL（または動画ID）を入力してください。');
+      if (!videoId) return alert('有効なYouTubeのURLまたは動画IDを入力してください。');
 
       setStatus('配信情報を取得中...');
 
       try {
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails,snippet&id=${videoId}&key=${apiKey}`);
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails,snippet&id=${videoId}&key=${API_KEY}`);
         const data = await res.json();
 
         if (data.error) {
@@ -183,7 +246,7 @@
         const item = data.items?.[0];
         if (!item || !item.liveStreamingDetails?.activeLiveChatId) {
           setStatus('ライブチャットが見つかりませんでした');
-          return alert('アクティブなライブチャットが見つかりません。現在配信中のライブURLか確認してください。');
+          return alert('アクティブなライブチャットが見つかりません。現在配信中のライブURLかご確認ください。');
         }
 
         liveChatId = item.liveStreamingDetails.activeLiveChatId;
@@ -192,16 +255,16 @@
 
         document.getElementById('startBtn').disabled = true;
         document.getElementById('stopBtn').disabled = false;
-        setStatus(`監視中：「${item.snippet.title}」で「抽選」コメントを待機しています...`);
+        setStatus(`監視中：「${item.snippet.title}」`);
 
-        pollChat(apiKey);
+        pollChat();
       } catch (e) {
         console.error(e);
         setStatus('通信エラーが発生しました');
       }
     }
 
-    // 監視停止処理
+    // 監視停止
     function stopMonitoring() {
       isMonitoring = false;
       clearTimeout(pollTimer);
@@ -210,11 +273,11 @@
       setStatus('監視を停止しました');
     }
 
-    // 2. チャット取得＆「抽選」キーワード判定
-    async function pollChat(apiKey) {
+    // チャットポーリング（1人1回：すでに登録済みなら追加しない）
+    async function pollChat() {
       if (!isMonitoring) return;
 
-      let url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${liveChatId}&part=snippet,authorDetails&key=${apiKey}`;
+      let url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${liveChatId}&part=snippet,authorDetails&key=${API_KEY}`;
       if (nextPageToken) url += `&pageToken=${nextPageToken}`;
 
       try {
@@ -236,8 +299,9 @@
             const authorId = item.authorDetails?.channelId;
             const authorName = item.authorDetails?.displayName;
 
-            // コメントに「抽選」が含まれており、まだ未登録のユーザーなら追加
-            if (message.includes('抽選') && authorId && !users.has(authorId)) {
+            // 「抽選」が含まれていて、まだ参加者プールにも過去の当選履歴にもいない場合のみ追加（＝1人1回制限）
+            const alreadyWon = winnerHistory.some(w => w.id === authorId);
+            if (message.includes('抽選') && authorId && !users.has(authorId) && !alreadyWon) {
               users.set(authorId, authorName);
               addedCount++;
             }
@@ -248,46 +312,66 @@
           }
         }
 
-        // API推奨待機時間（最低5秒）後に再実行
         const waitTime = Math.max(data.pollingIntervalMillis || 5000, 5000);
-        pollTimer = setTimeout(() => pollChat(apiKey), waitTime);
+        pollTimer = setTimeout(pollChat, waitTime);
       } catch (e) {
         console.error(e);
-        pollTimer = setTimeout(() => pollChat(apiKey), 10000);
+        pollTimer = setTimeout(pollChat, 10000);
       }
     }
 
-    // 3. UIとルーレット描画の更新
+    // UI更新とルーレット描画
     function updateUI() {
       const entries = Array.from(users.entries());
       document.getElementById('count').textContent = entries.length;
 
-      const listEl = document.getElementById('user-list');
+      // 参加者ボックス
+      const userBox = document.getElementById('user-list-box');
       if (entries.length === 0) {
-        listEl.textContent = 'まだ参加者がいません';
+        userBox.innerHTML = '<div style="color:#777; padding:4px;">参加者がいません</div>';
       } else {
-        listEl.innerHTML = entries.map(([id, name]) => `<span class="badge">${escapeHtml(name)}</span>`).join('');
+        userBox.innerHTML = entries.map(([id, name]) => `
+          <div class="user-item">
+            <span>${escapeHtml(name)}</span>
+            <button class="delete-btn" onclick="removeUser('${id}')">削除</button>
+          </div>
+        `).join('');
+      }
+
+      // 当選履歴ボックス
+      const historyBox = document.getElementById('winner-history-box');
+      document.getElementById('winner-count').textContent = winnerHistory.length;
+      if (winnerHistory.length === 0) {
+        historyBox.innerHTML = '<div style="color:#777; padding:4px;">当選履歴はありません</div>';
+      } else {
+        historyBox.innerHTML = winnerHistory.map((w, idx) => `
+          <div class="user-item">
+            <span>🎁 ${escapeHtml(w.name)} <small style="color:#aaa;">(${w.time})</small></span>
+            <button class="delete-btn" onclick="removeHistory(${idx})">削除</button>
+          </div>
+        `).join('');
       }
 
       document.getElementById('spinBtn').disabled = entries.length < 2;
       drawWheel(entries.map(e => e[1]));
     }
 
+    // ルーレット盤面描画
     function drawWheel(names) {
       const canvas = document.getElementById('wheel');
       const ctx = canvas.getContext('2d');
-      const cx = canvas.width / 2, cy = canvas.height / 2, radius = 200;
+      const cx = canvas.width / 2, cy = canvas.height / 2, radius = 160;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (names.length === 0) {
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#2a2a2a';
+        ctx.fillStyle = '#222';
         ctx.fill();
         ctx.fillStyle = '#777';
-        ctx.font = '16px sans-serif';
+        ctx.font = '14px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('「抽選」コメント待機中', cx, cy);
+        ctx.fillText('参加者待ち (2名以上)', cx, cy);
         return;
       }
 
@@ -303,29 +387,27 @@
         ctx.arc(cx, cy, radius, start, end);
         ctx.fillStyle = colors[i % colors.length];
         ctx.fill();
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.5;
         ctx.strokeStyle = '#121212';
         ctx.stroke();
 
-        // ユーザー名描画
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(start + sliceAngle / 2);
         ctx.textAlign = 'right';
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 14px sans-serif';
-        ctx.fillText(name.slice(0, 14), radius - 16, 5);
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(name.slice(0, 12), radius - 12, 4);
         ctx.restore();
       });
     }
 
-    // 4. ルーレット回転と当選判定
+    // ルーレットを回す
     function spinRoulette() {
       const entries = Array.from(users.entries());
       if (entries.length < 2) return;
 
       document.getElementById('spinBtn').disabled = true;
-      document.getElementById('removeWinnerBtn').disabled = true;
       document.getElementById('winner').textContent = '🎲 抽選中...';
 
       const spinDuration = 4500;
@@ -349,32 +431,38 @@
           const winnerIndex = Math.floor(normalizedAngle / sliceAngle);
           const [winnerId, winnerName] = entries[winnerIndex];
 
-          lastWinnerId = winnerId;
+          // 参加者プールから削除し、当選履歴に追加
+          users.delete(winnerId);
+          const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          winnerHistory.unshift({ id: winnerId, name: winnerName, time: nowTime });
+
           document.getElementById('winner').textContent = `🎉 当選: ${winnerName} さん！`;
           document.getElementById('spinBtn').disabled = false;
-          document.getElementById('removeWinnerBtn').disabled = false;
+          updateUI();
         }
       }
       requestAnimationFrame(animate);
     }
 
-    // 当選者をリストから除外
-    function removeLastWinner() {
-      if (lastWinnerId && users.has(lastWinnerId)) {
-        users.delete(lastWinnerId);
-        lastWinnerId = null;
-        document.getElementById('removeWinnerBtn').disabled = true;
+    // 個別の参加者を削除
+    function removeUser(id) {
+      users.delete(id);
+      updateUI();
+    }
+
+    // 履歴を削除
+    function removeHistory(index) {
+      winnerHistory.splice(index, 1);
+      updateUI();
+    }
+
+    // 全クリア
+    function resetUsers() {
+      if (confirm('参加者を全員クリアしますか？')) {
+        users.clear();
         document.getElementById('winner').textContent = '';
         updateUI();
       }
-    }
-
-    function resetUsers() {
-      users.clear();
-      lastWinnerId = null;
-      document.getElementById('winner').textContent = '';
-      document.getElementById('removeWinnerBtn').disabled = true;
-      updateUI();
     }
 
     function setStatus(text) {
@@ -385,7 +473,6 @@
       return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
 
-    // 初期描画
     drawWheel([]);
   </script>
 </body>
