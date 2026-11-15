@@ -148,7 +148,6 @@
   <h2>🎯 YouTube 抽選コメントルーレット</h2>
 
   <div class="container">
-    <!-- 設定・参加者管理パネル -->
     <div class="panel">
       <h3>配信・接続設定</h3>
       
@@ -177,7 +176,6 @@
       </div>
     </div>
 
-    <!-- ルーレット画面 -->
     <div class="roulette-section">
       <h3>ルーレット抽選</h3>
       <div id="winner"></div>
@@ -194,18 +192,16 @@
   </div>
 
   <script>
-    // Viteの環境変数からAPIキーを安全に読み込みます
     const API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
-    let users = new Map();       // channelId => displayName (参加者プール)
-    let winnerHistory = [];    // 当選者の配列 [{id, name, time}]
+    let users = new Map();
+    let winnerHistory = [];
     let nextPageToken = null;
     let liveChatId = null;
     let isMonitoring = false;
     let pollTimer = null;
     let currentAngle = 0;
 
-    // URLから動画IDを抽出する関数
     function extractVideoId(input) {
       const trimmed = input.trim();
       if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
@@ -220,7 +216,6 @@
       return null;
     }
 
-    // 監視開始
     async function startMonitoring() {
       if (!API_KEY) {
         return alert('APIキーが設定されていません。環境変数（VITE_YOUTUBE_API_KEY）を確認してください。');
@@ -263,7 +258,6 @@
       }
     }
 
-    // 監視停止
     function stopMonitoring() {
       isMonitoring = false;
       clearTimeout(pollTimer);
@@ -272,7 +266,6 @@
       setStatus('監視を停止しました');
     }
 
-    // チャットポーリング（1人1回：すでに登録済みなら追加しない）
     async function pollChat() {
       if (!isMonitoring) return;
 
@@ -318,7 +311,6 @@
       }
     }
 
-    // UI更新とルーレット描画
     function updateUI() {
       const entries = Array.from(users.entries());
       document.getElementById('count').textContent = entries.length;
@@ -352,7 +344,6 @@
       drawWheel(entries.map(e => e[1]));
     }
 
-    // ルーレット盤面描画
     function drawWheel(names) {
       const canvas = document.getElementById('wheel');
       const ctx = canvas.getContext('2d');
@@ -398,7 +389,6 @@
       });
     }
 
-    // ルーレットを回す
     function spinRoulette() {
       const entries = Array.from(users.entries());
       if (entries.length < 2) return;
