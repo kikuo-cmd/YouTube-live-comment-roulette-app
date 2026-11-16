@@ -6,32 +6,72 @@
   <style>
     body {
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
-      background: #121212;
+      /* OBSで透過させるための設定 */
+      background: transparent !important;
       color: #fff;
       margin: 0;
-      padding: 20px;
+      padding: 10px;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
-    h2 { margin-bottom: 15px; }
+
+    /* OBS配信用：左側の設定パネルやタイトルは非表示にする */
+    .panel, h2 {
+      display: none !important;
+    }
+
     .container {
       display: flex;
-      gap: 20px;
-      max-width: 1100px;
-      width: 100%;
-      flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
     }
-    .panel {
-      background: #1e1e1e;
-      padding: 20px;
+
+    /* ルーレット部分のスタイル（背景透過） */
+    .roulette-section {
+      text-align: center;
+      background: transparent !important;
+      padding: 10px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      flex: 1;
-      min-width: 320px;
-      max-width: 500px;
+      box-shadow: none !important;
+      width: 100%;
+      max-width: 450px;
+      box-sizing: border-box;
     }
+
+    /* 普段のブラウザ操作用（もし直接開いた時にも見やすくするスタイル） */
+    @media screen and (min-width: 800px) {
+      body {
+        background: #121212 !important;
+        padding: 20px;
+        flex-direction: column;
+      }
+      .panel, h2 {
+        display: block !important;
+      }
+      .container {
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .panel {
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        flex: 1;
+        min-width: 320px;
+        max-width: 500px;
+      }
+      .roulette-section {
+        background: #1e1e1e !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+        padding: 20px;
+      }
+    }
+
     .input-group {
       margin-bottom: 12px;
       display: flex;
@@ -72,16 +112,6 @@
 
     #status { font-size: 13px; color: #aaa; margin-top: 10px; }
     
-    .roulette-section {
-      text-align: center;
-      flex: 1;
-      min-width: 350px;
-      max-width: 450px;
-      background: #1e1e1e;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    }
     #winner {
       font-size: 26px;
       font-weight: bold;
@@ -201,15 +231,14 @@
   <script>
     const API_KEY = "AIzaSyCYLAvQzTGC37DOEj-Te9Gn4Gj_IiHsBw4";
 
-    let users = new Map();       // channelId => displayName (参加者プール)
-    let winnerHistory = [];    // 当選者の配列 [{id, name, time}]
+    let users = new Map();
+    let winnerHistory = [];
     let nextPageToken = null;
     let liveChatId = null;
     let isMonitoring = false;
     let pollTimer = null;
     let currentAngle = 0;
 
-    // URLから動画IDを抽出する関数
     function extractVideoId(input) {
       const trimmed = input.trim();
       if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
@@ -224,7 +253,6 @@
       return null;
     }
 
-    // 監視開始
     async function startMonitoring() {
       const urlInput = document.getElementById('videoUrl').value.trim();
       const videoId = extractVideoId(urlInput);
@@ -263,7 +291,6 @@
       }
     }
 
-    // 監視停止
     function stopMonitoring() {
       isMonitoring = false;
       clearTimeout(pollTimer);
@@ -272,7 +299,6 @@
       setStatus('監視を停止しました');
     }
 
-    // チャットポーリング
     async function pollChat() {
       if (!isMonitoring) return;
 
@@ -319,7 +345,6 @@
       }
     }
 
-    // UI更新とルーレット描画
     function updateUI() {
       const entries = Array.from(users.entries());
       document.getElementById('count').textContent = entries.length;
@@ -353,7 +378,6 @@
       drawWheel(entries.map(e => e[1]));
     }
 
-    // ルーレット盤面描画
     function drawWheel(names) {
       const canvas = document.getElementById('wheel');
       const ctx = canvas.getContext('2d');
@@ -399,7 +423,6 @@
       });
     }
 
-    // ルーレットを回す
     function spinRoulette() {
       const entries = Array.from(users.entries());
       if (entries.length < 2) return;
