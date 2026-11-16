@@ -6,72 +6,35 @@
   <style>
     body {
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
-      /* OBSで透過させるための設定 */
-      background: transparent !important;
+      background: transparent;
       color: #fff;
       margin: 0;
-      padding: 10px;
+      padding: 20px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      overflow: hidden;
     }
-
-    /* OBS配信用：左側の設定パネルやタイトルは非表示にする */
-    .panel, h2 {
-      display: none !important;
+    h2 {
+      margin-bottom: 15px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
     }
-
     .container {
       display: flex;
+      gap: 20px;
+      max-width: 1100px;
+      width: 100%;
+      flex-wrap: wrap;
       justify-content: center;
-      align-items: center;
-      width: 100%;
-      max-width: 100%;
     }
-
-    /* ルーレット部分のスタイル（背景透過） */
-    .roulette-section {
-      text-align: center;
-      background: transparent !important;
-      padding: 10px;
+    .panel {
+      background: rgba(30, 30, 30, 0.9);
+      padding: 20px;
       border-radius: 10px;
-      box-shadow: none !important;
-      width: 100%;
-      max-width: 450px;
-      box-sizing: border-box;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      flex: 1;
+      min-width: 320px;
+      max-width: 500px;
     }
-
-    /* 普段のブラウザ操作用（もし直接開いた時にも見やすくするスタイル） */
-    @media screen and (min-width: 800px) {
-      body {
-        background: #121212 !important;
-        padding: 20px;
-        flex-direction: column;
-      }
-      .panel, h2 {
-        display: block !important;
-      }
-      .container {
-        gap: 20px;
-        flex-wrap: wrap;
-      }
-      .panel {
-        background: #1e1e1e;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        flex: 1;
-        min-width: 320px;
-        max-width: 500px;
-      }
-      .roulette-section {
-        background: #1e1e1e !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
-        padding: 20px;
-      }
-    }
-
     .input-group {
       margin-bottom: 12px;
       display: flex;
@@ -112,13 +75,25 @@
 
     #status { font-size: 13px; color: #aaa; margin-top: 10px; }
     
+    .roulette-section {
+      text-align: center;
+      flex: 1;
+      min-width: 350px;
+      max-width: 450px;
+      background: transparent;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .roulette-section h3 {
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
     #winner {
       font-size: 26px;
       font-weight: bold;
       color: #ffcc00;
       margin: 10px 0;
       min-height: 38px;
-      text-shadow: 0 2px 8px rgba(255, 204, 0, 0.4);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
     }
     #canvas-container {
       position: relative;
@@ -178,7 +153,7 @@
   <h2>🎯 YouTube コメントルーレット</h2>
 
   <div class="container">
-    <!-- 設定・参加者管理パネル -->
+    <!-- 左側：設定・参加者管理パネル -->
     <div class="panel">
       <h3>配信・接続設定</h3>
       
@@ -212,7 +187,7 @@
       </div>
     </div>
 
-    <!-- ルーレット画面 -->
+    <!-- 右側：ルーレット画面（背景透過） -->
     <div class="roulette-section">
       <h3>ルーレット抽選</h3>
       <div id="winner"></div>
@@ -387,9 +362,9 @@
       if (names.length === 0) {
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#222';
+        ctx.fillStyle = 'rgba(34, 34, 34, 0.8)';
         ctx.fill();
-        ctx.fillStyle = '#777';
+        ctx.fillStyle = '#ccc';
         ctx.font = '14px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('参加者待ち (2名以上)', cx, cy);
