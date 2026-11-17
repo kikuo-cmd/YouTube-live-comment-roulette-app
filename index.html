@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
-      background: transparent;
+      background: #121212;
       color: #fff;
       margin: 0;
       padding: 20px;
@@ -27,7 +27,7 @@
       justify-content: center;
     }
     .panel {
-      background: rgba(30, 30, 30, 0.9);
+      background: #1e1e1e;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
@@ -73,6 +73,8 @@
     .btn-green:hover:not(:disabled) { background: #218838; }
     .btn-blue { background: #007bff; color: white; }
     .btn-blue:hover:not(:disabled) { background: #0056b3; }
+    .btn-purple { background: #6f42c1; color: white; width: 100%; margin-top: 10px; }
+    .btn-purple:hover { background: #5a32a3; }
     button:disabled { background: #333; color: #777; cursor: not-allowed; }
 
     #status { font-size: 13px; color: #aaa; margin-top: 10px; }
@@ -82,9 +84,10 @@
       flex: 1;
       min-width: 350px;
       max-width: 450px;
-      background: transparent;
+      background: #1e1e1e;
       padding: 20px;
       border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
     .roulette-section h3 {
       text-shadow: 0 2px 6px rgba(0,0,0,0.8);
@@ -148,6 +151,33 @@
       cursor: pointer;
     }
     .delete-btn:hover { background: #843534; }
+
+    /* モード切り替え用のCSS */
+    /* 1. ルーレット単体モード（設定パネルを隠す） */
+    body.mode-roulette .panel {
+      display: none !important;
+    }
+    body.mode-roulette .container {
+      display: block !important;
+      width: 100% !important;
+    }
+    body.mode-roulette .roulette-section {
+      max-width: 100% !important;
+      margin: 0 auto !important;
+    }
+
+    /* 2. 順番決め・設定パネル単体モード（ルーレットを隠す） */
+    body.mode-panel .roulette-section {
+      display: none !important;
+    }
+    body.mode-panel .container {
+      display: block !important;
+      width: 100% !important;
+    }
+    body.mode-panel .panel {
+      max-width: 100% !important;
+      margin: 0 auto !important;
+    }
   </style>
 </head>
 <body>
@@ -190,9 +220,12 @@
         <label>当選履歴 (<span id="winner-count">0</span>件)</label>
         <div id="winner-history-box" class="scroll-box">まだ当選者はいません</div>
       </div>
+
+      <!-- 表示切り替えボタン（パネル側） -->
+      <button class="btn-purple" onclick="switchMode('roulette')">🎯 ルーレット画面のみを表示する</button>
     </div>
 
-    <!-- 右側：ルーレット画面（背景透過） -->
+    <!-- 右側：ルーレット画面 -->
     <div class="roulette-section">
       <h3>ルーレット抽選</h3>
       <div id="winner"></div>
@@ -205,6 +238,9 @@
       <div style="display:flex; gap:10px; margin-top: 15px;">
         <button id="spinBtn" class="btn-green" onclick="spinRoulette()" disabled>ルーレットを回す！</button>
       </div>
+
+      <!-- 表示切り替えボタン（ルーレット側） -->
+      <button class="btn-purple" style="margin-top:20px;" onclick="switchMode('panel')">⚙️ 順番決め・設定パネルを表示する</button>
     </div>
   </div>
 
@@ -218,6 +254,16 @@
     let isMonitoring = false;
     let pollTimer = null;
     let currentAngle = 0;
+
+    // 表示モードを切り替える関数 ('normal' | 'roulette' | 'panel')
+    function switchMode(mode) {
+      document.body.classList.remove('mode-roulette', 'mode-panel');
+      if (mode === 'roulette') {
+        document.body.classList.add('mode-roulette');
+      } else if (mode === 'panel') {
+        document.body.classList.add('mode-panel');
+      }
+    }
 
     function extractVideoId(input) {
       const trimmed = input.trim();
@@ -362,7 +408,6 @@
     function shuffleUsers() {
       if (users.size < 2) return;
       const entriesArray = Array.from(users.entries());
-      // Fisher-Yates アルゴリズムでシャッフル
       for (let i = entriesArray.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [entriesArray[i], entriesArray[j]] = [entriesArray[j], entriesArray[i]];
@@ -380,9 +425,9 @@
       if (names.length === 0) {
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(34, 34, 34, 0.8)';
+        ctx.fillStyle = '#222';
         ctx.fill();
-        ctx.fillStyle = '#ccc';
+        ctx.fillStyle = '#777';
         ctx.font = '14px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('参加者待ち (2名以上)', cx, cy);
